@@ -1,3 +1,3 @@
 # epson-escpos-hello-world
 
-`git clone https://github.com/conciseusa/arduino-rtc-json-data-logger.git`
+`git clone https://github.com/conciseusa/epson-escpos-hello-world.git`
