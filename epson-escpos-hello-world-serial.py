@@ -1,6 +1,11 @@
 #!/usr/bin/python
 
 # run with `python3 epson-escpos-hello-world-serial.py`
+# If PySerial not installed, install as root or consider a python virtual environment
+# sudo apt install python3-pip
+# sudo pip3 install pyserial
+# If you see Permission denied: '/dev/ttyS0' adding user to the dialout group may fix the error
+# sudo adduser YourUserName dialout # logout, login and try again
 
 import serial
 from datetime import datetime
