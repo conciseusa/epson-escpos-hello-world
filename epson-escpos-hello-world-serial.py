@@ -50,14 +50,15 @@ ser.write(init)
 ser.write(text("Hello World!"))
 if serial_host:
     ser.write(text(" From {} land.".format(serial_host)))
-ser.write(text(" The time is:"))
 ser.write(lf)
 
+ser.write(text(" The time is:"))
 now = datetime.now()
 ser.write(text("{}".format(now.strftime("%Y/%m/%d %H:%M:%S"))))
 ser.write(lf)
 
 # ser.write(magnify(2, 2)) # did not seem to do anything on TM-T20II
+
 count = 0
 while count <= 1:
     ser.write(text("Sent {} line(s)".format(count)))
