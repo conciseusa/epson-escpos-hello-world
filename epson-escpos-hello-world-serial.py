@@ -11,23 +11,29 @@ import serial
 from datetime import datetime
 import time
 
+serial_host  = ''
 # Windows built in serial port
 #serialp  = 'COM1'
+#serial_host  = 'Windows'
 # USB serial port
 #serialp  = '/dev/ttyUSB0'
 # Ubuntu on box with built-in serial port `python3 epson-escpos-hello-world-serial.py`
 # Tested with Epson TM-T20II connected with a Monoprice #479 6ft Null Modem DB9F/DB25M Molded Cable
 serialp  = '/dev/ttyS0'
+serial_host  = 'Ubuntu'
 # Pine A64
 #serialp  = '/dev/ttyS2'
+#serial_host  = 'Pine A64'
 # Raspberry Pi, may need to setup serial port first
 #serialp  = '/dev/serial0'
+#serial_host  = 'Raspberry Pi'
 
 # some common commands
 init=b'\x1b\x40' # ESC @ Initialize printer
 lf=b'\x0a' # LF Prints the data in the print buffer and feeds one line
 gs=b'\x1d' # GS Group Separator
 cut=gs+b'\x56\x00'; # GS V x00 worked on TM-T20II
+paper_status=b'\x10\x04\x04'
 
 # https://stackoverflow.com/questions/59887559/python-send-escpos-command-to-thermal-printer-character-size-issue
 def magnify(wm, hm): # Code for magnification of characters.
@@ -41,7 +47,10 @@ def text(t, encoding="ascii"): # Code for sending text.
 ser = serial.Serial(serialp, 38400) # , timeout=0.050
 ser.write(init)
 
-ser.write(text("Hello World! The time is:"))
+ser.write(text("Hello World!"))
+if serial_host:
+    ser.write(text(" From {} land.".format(serial_host)))
+ser.write(text(" The time is:"))
 ser.write(lf)
 
 now = datetime.now()
@@ -50,11 +59,29 @@ ser.write(lf)
 
 # ser.write(magnify(2, 2)) # did not seem to do anything on TM-T20II
 count = 0
-while count <= 3:
+while count <= 1:
     ser.write(text("Sent {} line(s)".format(count)))
     ser.write(lf)
     time.sleep(1)
     count += 1
+
+# Read a value to test printer sending serial data
+ser.write(paper_status)
+paper_status = ser.read().hex()
+# Print according to the hexadecimal value returned by the printer
+if paper_status == "12":
+    paper_status_text = 'Paper adequate'
+elif paper_status == "1e":
+    paper_status_text = 'Paper near-end detected by near-end sensor'
+elif paper_status == "72":
+    paper_status_text = 'Paper end detected by roll sensor'
+elif paper_status == "7e":
+    paper_status_text = 'Both sensors detect paper out'
+else:
+    paper_status_text = 'Unknown paper status value'
+print(paper_status_text)
+ser.write(lf)
+ser.write(text("{}".format(paper_status_text)))
 
 ser.write(lf+lf+lf+lf) # move printed area above blade
 ser.write(cut)
