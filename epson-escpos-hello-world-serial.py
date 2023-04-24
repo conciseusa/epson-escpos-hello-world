@@ -17,7 +17,7 @@ serial_host  = ''
 #serial_host  = 'Windows'
 # USB serial port
 #serialp  = '/dev/ttyUSB0'
-# Ubuntu on box with built-in serial port `python3 epson-escpos-hello-world-serial.py`
+# Ubuntu on box with built-in serial port
 # Tested with Epson TM-T20II connected with a Monoprice #479 6ft Null Modem DB9F/DB25M Molded Cable
 serialp  = '/dev/ttyS0'
 serial_host  = 'Ubuntu'
@@ -27,6 +27,11 @@ serial_host  = 'Ubuntu'
 # Raspberry Pi, may need to setup serial port first
 #serialp  = '/dev/serial0'
 #serial_host  = 'Raspberry Pi'
+# Linux beaglebone 4.19.94-ti-r73
+#serialp  = '/dev/ttyS1' # sudo apt-get install python3-serial if No module named 'serial' Error
+#serial_host  = 'Beaglebone Black' # restart: sudo shutdown -r now / shutdown: sudo shutdown -h now
+#from Adafruit_BBIO import UART # GPIO pins & UART need to be setup
+#UART.setup('UART1')
 
 # some common commands
 init=b'\x1b\x40' # ESC @ Initialize printer
@@ -44,7 +49,7 @@ def magnify(wm, hm): # Code for magnification of characters.
 def text(t, encoding="ascii"): # Code for sending text.
     return bytes(t, encoding)
 
-ser = serial.Serial(serialp, 38400) # , timeout=0.050
+ser = serial.Serial(serialp, 38400, timeout=10)
 ser.write(init)
 
 ser.write(text("Hello World!"))
@@ -52,15 +57,15 @@ if serial_host:
     ser.write(text(" From {} land.".format(serial_host)))
 ser.write(lf)
 
-ser.write(text(" The time is:"))
+ser.write(text("The time is: "))
 now = datetime.now()
 ser.write(text("{}".format(now.strftime("%Y/%m/%d %H:%M:%S"))))
 ser.write(lf)
 
 # ser.write(magnify(2, 2)) # did not seem to do anything on TM-T20II
 
-count = 0
-while count <= 1:
+count = 1
+while count <= 2:
     ser.write(text("Sent {} line(s)".format(count)))
     ser.write(lf)
     time.sleep(1)
@@ -80,6 +85,7 @@ elif paper_status == "7e":
     paper_status_text = 'Both sensors detect paper out'
 else:
     paper_status_text = 'Unknown paper status value'
+    # if the script stalls for the timeout period, and this is the paper status, read timed out
 print(paper_status_text)
 ser.write(lf)
 ser.write(text("{}".format(paper_status_text)))
